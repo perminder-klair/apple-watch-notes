@@ -50,7 +50,7 @@ struct NoteDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                NavigationLink(destination: NoteEditorView(existingNote: note)) {
+                NavigationLink(destination: NoteEditorView(note: note, inputMode: .keyboard)) {
                     Image(systemName: "pencil")
                 }
             }

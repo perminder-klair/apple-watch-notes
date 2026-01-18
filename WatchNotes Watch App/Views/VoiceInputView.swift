@@ -2,15 +2,14 @@
 //  VoiceInputView.swift
 //  WatchNotes Watch App
 //
-//  This view provides dedicated voice input using Apple's Speech framework.
-//  It shows a visual recording interface and transcribes speech to text.
+//  This view provides dedicated voice input by recording audio on Watch
+//  and sending it to iPhone for transcription via the Speech framework.
 //
 
 import SwiftUI
-import Speech
 import AVFoundation
 
-/// VoiceInputView handles speech-to-text recording
+/// VoiceInputView handles audio recording and remote transcription
 struct VoiceInputView: View {
 
     // MARK: - Environment
@@ -27,7 +26,10 @@ struct VoiceInputView: View {
     /// Current recording state
     @State private var isRecording = false
 
-    /// The transcribed text so far
+    /// Whether we're waiting for transcription from iPhone
+    @State private var isTranscribing = false
+
+    /// The transcribed text received from iPhone
     @State private var transcribedText = ""
 
     /// Error message if something goes wrong
@@ -39,19 +41,19 @@ struct VoiceInputView: View {
     /// Whether we're checking permissions
     @State private var isCheckingPermission = true
 
-    // MARK: - Speech Recognition
+    /// Whether iPhone is reachable for transcription
+    @State private var isPhoneReachable = false
 
-    /// The speech recognizer for converting speech to text
-    @State private var speechRecognizer: SFSpeechRecognizer?
+    // MARK: - Audio Recording
 
-    /// The current recognition request
-    @State private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    /// Audio recorder for capturing microphone input
+    @State private var audioRecorder: AVAudioRecorder?
 
-    /// The recognition task
-    @State private var recognitionTask: SFSpeechRecognitionTask?
+    /// URL where the recording is saved
+    @State private var recordingURL: URL?
 
-    /// Audio engine for capturing microphone input
-    @State private var audioEngine = AVAudioEngine()
+    /// Connectivity service for communicating with iPhone
+    private let connectivityService = WatchConnectivityService.shared
 
     // MARK: - Body
 
@@ -70,6 +72,9 @@ struct VoiceInputView: View {
                 } else if !hasPermission {
                     // Permission denied state
                     permissionDeniedView
+                } else if isTranscribing {
+                    // Transcribing state (waiting for iPhone)
+                    transcribingView
                 } else {
                     // Main recording interface
                     recordingInterface
@@ -81,9 +86,13 @@ struct VoiceInputView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             checkPermissions()
+            setupTranscriptionCallback()
         }
         .onDisappear {
             stopRecording()
+        }
+        .onReceive(connectivityService.$isPhoneReachable) { reachable in
+            isPhoneReachable = reachable
         }
     }
 
@@ -92,6 +101,11 @@ struct VoiceInputView: View {
     /// Main recording interface
     private var recordingInterface: some View {
         VStack(spacing: 20) {
+            // Connection status
+            if !isPhoneReachable {
+                connectionWarning
+            }
+
             // Visual indicator
             recordingIndicator
 
@@ -107,6 +121,36 @@ struct VoiceInputView: View {
             if !transcribedText.isEmpty {
                 doneButton
             }
+        }
+    }
+
+    /// Warning shown when iPhone is not reachable
+    private var connectionWarning: some View {
+        HStack {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+            Text("iPhone required for transcription")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color.orange.opacity(0.2))
+        .cornerRadius(8)
+    }
+
+    /// View shown while waiting for transcription
+    private var transcribingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.5)
+
+            Text("Transcribing...")
+                .font(.headline)
+
+            Text("Sending audio to iPhone")
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
     }
 
@@ -170,6 +214,7 @@ struct VoiceInputView: View {
         }
         .buttonStyle(.borderedProminent)
         .tint(isRecording ? .red : .blue)
+        .disabled(!isPhoneReachable && !isRecording)
     }
 
     /// Done button to confirm and use the transcription
@@ -205,6 +250,7 @@ struct VoiceInputView: View {
 
             Button("Try Again") {
                 errorMessage = nil
+                isTranscribing = false
                 checkPermissions()
             }
             .buttonStyle(.borderedProminent)
@@ -226,11 +272,8 @@ struct VoiceInputView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
 
-            Button("Open Settings") {
-                // On watchOS, this opens the Watch Settings app
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    WKExtension.shared().openSystemURL(url)
-                }
+            Button("Dismiss") {
+                dismiss()
             }
             .buttonStyle(.borderedProminent)
         }
@@ -238,43 +281,10 @@ struct VoiceInputView: View {
 
     // MARK: - Permission Handling
 
-    /// Checks for speech recognition and microphone permissions
+    /// Checks for microphone permissions
     private func checkPermissions() {
         isCheckingPermission = true
 
-        // Initialize speech recognizer
-        speechRecognizer = SFSpeechRecognizer(locale: Locale.current)
-
-        // Check if speech recognition is available
-        guard speechRecognizer?.isAvailable == true else {
-            errorMessage = "Speech recognition is not available on this device."
-            isCheckingPermission = false
-            return
-        }
-
-        // Request speech recognition permission
-        SFSpeechRecognizer.requestAuthorization { status in
-            DispatchQueue.main.async {
-                switch status {
-                case .authorized:
-                    // Now check microphone permission
-                    checkMicrophonePermission()
-                case .denied, .restricted:
-                    hasPermission = false
-                    isCheckingPermission = false
-                case .notDetermined:
-                    hasPermission = false
-                    isCheckingPermission = false
-                @unknown default:
-                    hasPermission = false
-                    isCheckingPermission = false
-                }
-            }
-        }
-    }
-
-    /// Checks microphone permission specifically
-    private func checkMicrophonePermission() {
         AVAudioApplication.requestRecordPermission { granted in
             DispatchQueue.main.async {
                 hasPermission = granted
@@ -283,78 +293,94 @@ struct VoiceInputView: View {
         }
     }
 
+    // MARK: - Transcription Callback
+
+    /// Set up the callback for receiving transcription results
+    private func setupTranscriptionCallback() {
+        connectivityService.onTranscriptionReceived = { (transcription: String) in
+            DispatchQueue.main.async {
+                self.isTranscribing = false
+                self.transcribedText = transcription
+            }
+        }
+
+        connectivityService.onTranscriptionError = { (error: String) in
+            DispatchQueue.main.async {
+                self.isTranscribing = false
+                self.errorMessage = error
+            }
+        }
+    }
+
     // MARK: - Recording Methods
 
-    /// Starts the speech recognition recording
+    /// Starts audio recording
     private func startRecording() {
-        // Cancel any existing task
-        recognitionTask?.cancel()
-        recognitionTask = nil
-
         // Configure audio session
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            try audioSession.setCategory(.record, mode: .default)
+            try audioSession.setActive(true)
         } catch {
             errorMessage = "Could not configure audio session: \(error.localizedDescription)"
             return
         }
 
-        // Create recognition request
-        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+        // Create recording URL
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("m4a")
+        recordingURL = url
 
-        guard let recognitionRequest = recognitionRequest else {
-            errorMessage = "Could not create recognition request."
-            return
-        }
+        // Configure recorder settings for good quality while keeping file size reasonable
+        let settings: [String: Any] = [
+            AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+            AVSampleRateKey: 16000,
+            AVNumberOfChannelsKey: 1,
+            AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue
+        ]
 
-        // Configure for real-time results
-        recognitionRequest.shouldReportPartialResults = true
-
-        // Get audio input
-        let inputNode = audioEngine.inputNode
-
-        // Start recognition task
-        recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
-            if let result = result {
-                // Update transcribed text with the best transcription
-                DispatchQueue.main.async {
-                    self.transcribedText = result.bestTranscription.formattedString
-                }
-            }
-
-            if error != nil || (result?.isFinal == true) {
-                self.stopRecording()
-            }
-        }
-
-        // Configure audio format
-        let recordingFormat = inputNode.outputFormat(forBus: 0)
-
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
-            recognitionRequest.append(buffer)
-        }
-
-        // Start audio engine
         do {
-            audioEngine.prepare()
-            try audioEngine.start()
+            audioRecorder = try AVAudioRecorder(url: url, settings: settings)
+            audioRecorder?.record()
             isRecording = true
         } catch {
-            errorMessage = "Could not start audio engine: \(error.localizedDescription)"
+            errorMessage = "Could not start recording: \(error.localizedDescription)"
         }
     }
 
-    /// Stops the speech recognition recording
+    /// Stops recording and sends audio to iPhone for transcription
     private func stopRecording() {
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
-        recognitionRequest?.endAudio()
-        recognitionRequest = nil
-        recognitionTask?.cancel()
-        recognitionTask = nil
+        guard isRecording else { return }
+
+        audioRecorder?.stop()
         isRecording = false
+
+        // Send audio to iPhone for transcription
+        guard let url = recordingURL else {
+            errorMessage = "No recording found"
+            return
+        }
+
+        do {
+            let audioData = try Data(contentsOf: url)
+
+            // Clean up the temp file
+            try? FileManager.default.removeItem(at: url)
+
+            // Check if iPhone is reachable
+            guard isPhoneReachable else {
+                errorMessage = "iPhone not connected. Please ensure your iPhone is nearby and the WatchNotes app is installed."
+                return
+            }
+
+            // Send to iPhone for transcription
+            isTranscribing = true
+            connectivityService.requestTranscription(audioData: audioData)
+
+        } catch {
+            errorMessage = "Could not read recording: \(error.localizedDescription)"
+        }
     }
 }
 

@@ -12,8 +12,11 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     @Published private(set) var isWatchAppInstalled: Bool = false
     @Published private(set) var lastSummarizationRequest: Date?
     @Published private(set) var pendingRequestCount: Int = 0
+    @Published private(set) var lastTranscriptionRequest: Date?
+    @Published private(set) var pendingTranscriptionCount: Int = 0
 
     private let summarizationService = SummarizationService.shared
+    private let transcriptionService = TranscriptionService.shared
     private var session: WCSession?
 
     private override init() {
@@ -80,6 +83,41 @@ final class WatchConnectivityService: NSObject, ObservableObject {
             }
         }
     }
+
+    /// Process a transcription request from the Watch
+    private func handleTranscriptionRequest(_ request: TranscriptionRequest) {
+        Task { @MainActor in
+            pendingTranscriptionCount += 1
+            lastTranscriptionRequest = Date()
+
+            do {
+                let transcription = try await transcriptionService.transcribe(request.audioData)
+                let response = TranscriptionResponse(requestId: request.requestId, transcription: transcription)
+                sendTranscriptionResponse(response)
+            } catch {
+                let errorMessage = (error as? TranscriptionError)?.errorDescription ?? error.localizedDescription
+                let response = TranscriptionResponse(requestId: request.requestId, error: errorMessage)
+                sendTranscriptionResponse(response)
+            }
+
+            pendingTranscriptionCount -= 1
+        }
+    }
+
+    /// Send transcription response back to Watch
+    private func sendTranscriptionResponse(_ response: TranscriptionResponse) {
+        guard let session = session else { return }
+
+        // Use transferUserInfo for guaranteed delivery even if Watch becomes unreachable
+        session.transferUserInfo(response.toDictionary())
+
+        // Also try to send immediately if reachable
+        if session.isReachable {
+            session.sendMessage(response.toDictionary(), replyHandler: nil) { error in
+                print("Error sending transcription response: \(error.localizedDescription)")
+            }
+        }
+    }
 }
 
 // MARK: - WCSessionDelegate
@@ -90,6 +128,12 @@ extension WatchConnectivityService: WCSessionDelegate {
                 print("WCSession activation failed: \(error.localizedDescription)")
                 return
             }
+
+            // Diagnostic logging for WatchConnectivity debugging
+            print("WCSession activated - state: \(activationState.rawValue)")
+            print("  isPaired: \(session.isPaired)")
+            print("  isWatchAppInstalled: \(session.isWatchAppInstalled)")
+            print("  isReachable: \(session.isReachable)")
 
             updateConnectionState(session)
 
@@ -156,10 +200,14 @@ extension WatchConnectivityService: WCSessionDelegate {
             if let request = SummarizationRequest.fromDictionary(message) {
                 handleSummarizationRequest(request)
             }
+        case .transcriptionRequest:
+            if let request = TranscriptionRequest.fromDictionary(message) {
+                handleTranscriptionRequest(request)
+            }
         case .statusUpdate:
             // Status updates come from iPhone to Watch, not the other way
             break
-        case .summarizationResponse:
+        case .summarizationResponse, .transcriptionResponse:
             // Responses go from iPhone to Watch, not the other way
             break
         }

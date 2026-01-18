@@ -6,13 +6,51 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7EC0000C000000000000000A /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EC0000D000000000000000A /* Speech.framework */; };
+		7EC0000E000000000000000A /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EC0000F000000000000000A /* AVFoundation.framework */; };
+		7EC00010000000000000000A /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EC00011000000000000000A /* WatchConnectivity.framework */; };
+		7EC00012000000000000000A /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EC00013000000000000000A /* WatchConnectivity.framework */; };
+		7EC00014000000000000000A /* FoundationModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EC00015000000000000000A /* FoundationModels.framework */; };
+		7EC00017000000000000000A /* WatchNotes Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 7EB57D862F1C502B006DA849 /* WatchNotes Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7EC00018000000000000000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7EB57D7E2F1C502A006DA849 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7EB57D852F1C502B006DA849;
+			remoteInfo = "WatchNotes Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7EC00019000000000000000A /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				7EC00017000000000000000A /* WatchNotes Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		7EB57D862F1C502B006DA849 /* WatchNotes Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchNotes Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7EC00001000000000000000A /* WatchNotes iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchNotes iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7EC0000D000000000000000A /* Speech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speech.framework; path = System/Library/Frameworks/Speech.framework; sourceTree = SDKROOT; };
+		7EC0000F000000000000000A /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		7EC00011000000000000000A /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
+		7EC00013000000000000000A /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
+		7EC00015000000000000000A /* FoundationModels.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FoundationModels.framework; path = System/Library/Frameworks/FoundationModels.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		7EC0000B000000000000000A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		7EC0000B000000000000000A /* Exceptions for "WatchNotes Watch App" folder in "WatchNotes Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -25,7 +63,7 @@
 		7EB57D882F1C502B006DA849 /* WatchNotes Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				7EC0000B000000000000000A /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				7EC0000B000000000000000A /* Exceptions for "WatchNotes Watch App" folder in "WatchNotes Watch App" target */,
 			);
 			path = "WatchNotes Watch App";
 			sourceTree = "<group>";
@@ -47,6 +85,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7EC0000E000000000000000A /* AVFoundation.framework in Frameworks */,
+				7EC00010000000000000000A /* WatchConnectivity.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -54,6 +94,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7EC00012000000000000000A /* WatchConnectivity.framework in Frameworks */,
+				7EC00014000000000000000A /* FoundationModels.framework in Frameworks */,
+				7EC0000C000000000000000A /* Speech.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +109,7 @@
 				7EC00003000000000000000A /* Shared */,
 				7EB57D882F1C502B006DA849 /* WatchNotes Watch App */,
 				7EC00002000000000000000A /* WatchNotes iOS */,
+				7EC00016000000000000000A /* Frameworks */,
 				7EB57D872F1C502B006DA849 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -77,6 +121,18 @@
 				7EC00001000000000000000A /* WatchNotes iOS.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		7EC00016000000000000000A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7EC0000D000000000000000A /* Speech.framework */,
+				7EC0000F000000000000000A /* AVFoundation.framework */,
+				7EC00011000000000000000A /* WatchConnectivity.framework */,
+				7EC00013000000000000000A /* WatchConnectivity.framework */,
+				7EC00015000000000000000A /* FoundationModels.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,10 +168,12 @@
 				7EC00007000000000000000A /* Sources */,
 				7EC00004000000000000000A /* Frameworks */,
 				7EC00008000000000000000A /* Resources */,
+				7EC00019000000000000000A /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				7EC0001A000000000000000A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				7EC00002000000000000000A /* WatchNotes iOS */,
@@ -199,6 +257,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7EC0001A000000000000000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7EB57D852F1C502B006DA849 /* WatchNotes Watch App */;
+			targetProxy = 7EC00018000000000000000A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		7EB57D8F2F1C502C006DA849 /* Debug */ = {
@@ -329,13 +395,13 @@
 				INFOPLIST_FILE = "WatchNotes Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = WatchNotes;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.watchnotes.ios";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.watchnotes.ios;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.watchnotes.ios.watchkitapp";
+				PRODUCT_BUNDLE_IDENTIFIER = com.watchnotes.ios.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -362,13 +428,13 @@
 				INFOPLIST_FILE = "WatchNotes Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = WatchNotes;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.watchnotes.ios";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.watchnotes.ios;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.watchnotes.ios.watchkitapp";
+				PRODUCT_BUNDLE_IDENTIFIER = com.watchnotes.ios.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -400,12 +466,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.watchnotes.ios";
+				PRODUCT_BUNDLE_IDENTIFIER = com.watchnotes.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -415,7 +482,6 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
@@ -435,12 +501,13 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.watchnotes.ios";
+				PRODUCT_BUNDLE_IDENTIFIER = com.watchnotes.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -451,7 +518,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};

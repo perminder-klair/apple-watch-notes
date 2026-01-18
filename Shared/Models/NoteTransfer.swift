@@ -5,6 +5,8 @@ enum NoteMessageType: String, Codable {
     case summarizationRequest = "summarization_request"
     case summarizationResponse = "summarization_response"
     case statusUpdate = "status_update"
+    case transcriptionRequest = "transcription_request"
+    case transcriptionResponse = "transcription_response"
 }
 
 /// Request from Watch to iPhone for note summarization
@@ -155,3 +157,106 @@ struct ConnectionStatus: Codable {
 
 /// Minimum content length required for summarization
 let kMinimumSummarizationLength = 50
+
+// MARK: - Transcription Messages
+
+/// Request from Watch to iPhone for audio transcription
+struct TranscriptionRequest: Codable {
+    let messageType: NoteMessageType
+    let requestId: UUID
+    let audioData: Data
+    let timestamp: Date
+
+    init(requestId: UUID = UUID(), audioData: Data) {
+        self.messageType = .transcriptionRequest
+        self.requestId = requestId
+        self.audioData = audioData
+        self.timestamp = Date()
+    }
+
+    /// Convert to dictionary for WatchConnectivity message
+    func toDictionary() -> [String: Any] {
+        return [
+            "messageType": messageType.rawValue,
+            "requestId": requestId.uuidString,
+            "audioData": audioData.base64EncodedString(),
+            "timestamp": timestamp.timeIntervalSince1970
+        ]
+    }
+
+    /// Create from dictionary received via WatchConnectivity
+    static func fromDictionary(_ dict: [String: Any]) -> TranscriptionRequest? {
+        guard let messageTypeRaw = dict["messageType"] as? String,
+              let messageType = NoteMessageType(rawValue: messageTypeRaw),
+              messageType == .transcriptionRequest,
+              let requestIdString = dict["requestId"] as? String,
+              let requestId = UUID(uuidString: requestIdString),
+              let audioDataBase64 = dict["audioData"] as? String,
+              let audioData = Data(base64Encoded: audioDataBase64) else {
+            return nil
+        }
+
+        return TranscriptionRequest(requestId: requestId, audioData: audioData)
+    }
+}
+
+/// Response from iPhone to Watch with transcription result
+struct TranscriptionResponse: Codable {
+    let messageType: NoteMessageType
+    let requestId: UUID
+    let transcription: String?
+    let error: String?
+    let success: Bool
+
+    init(requestId: UUID, transcription: String) {
+        self.messageType = .transcriptionResponse
+        self.requestId = requestId
+        self.transcription = transcription
+        self.error = nil
+        self.success = true
+    }
+
+    init(requestId: UUID, error: String) {
+        self.messageType = .transcriptionResponse
+        self.requestId = requestId
+        self.transcription = nil
+        self.error = error
+        self.success = false
+    }
+
+    /// Convert to dictionary for WatchConnectivity message
+    func toDictionary() -> [String: Any] {
+        var dict: [String: Any] = [
+            "messageType": messageType.rawValue,
+            "requestId": requestId.uuidString,
+            "success": success
+        ]
+        if let transcription = transcription {
+            dict["transcription"] = transcription
+        }
+        if let error = error {
+            dict["error"] = error
+        }
+        return dict
+    }
+
+    /// Create from dictionary received via WatchConnectivity
+    static func fromDictionary(_ dict: [String: Any]) -> TranscriptionResponse? {
+        guard let messageTypeRaw = dict["messageType"] as? String,
+              let messageType = NoteMessageType(rawValue: messageTypeRaw),
+              messageType == .transcriptionResponse,
+              let requestIdString = dict["requestId"] as? String,
+              let requestId = UUID(uuidString: requestIdString),
+              let success = dict["success"] as? Bool else {
+            return nil
+        }
+
+        if success, let transcription = dict["transcription"] as? String {
+            return TranscriptionResponse(requestId: requestId, transcription: transcription)
+        } else if let error = dict["error"] as? String {
+            return TranscriptionResponse(requestId: requestId, error: error)
+        }
+
+        return nil
+    }
+}

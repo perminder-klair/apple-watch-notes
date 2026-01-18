@@ -9,9 +9,11 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     static let shared = WatchConnectivityService()
 
     @Published private(set) var isPhoneReachable: Bool = false
+    @Published private(set) var isCompanionAppInstalled: Bool = false
     @Published private(set) var isAIAvailable: Bool = false
     @Published private(set) var aiStatusMessage: String = "Connecting to iPhone..."
     @Published private(set) var pendingNoteIds: Set<UUID> = []
+    @Published private(set) var pendingTranscriptionIds: Set<UUID> = []
 
     private var session: WCSession?
     private var modelContext: ModelContext?
@@ -19,6 +21,10 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     /// Callbacks for when summaries are received
     var onSummaryReceived: ((UUID, String) -> Void)?
     var onSummaryError: ((UUID, String) -> Void)?
+
+    /// Callbacks for when transcriptions are received
+    var onTranscriptionReceived: ((String) -> Void)?
+    var onTranscriptionError: ((String) -> Void)?
 
     private override init() {
         super.init()
@@ -85,6 +91,32 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     func isPending(noteId: UUID) -> Bool {
         pendingNoteIds.contains(noteId)
     }
+
+    /// Request transcription of audio from the iPhone
+    /// - Parameter audioData: The audio data to transcribe (M4A/AAC format)
+    func requestTranscription(audioData: Data) {
+        guard let session = session else {
+            onTranscriptionError?("Watch connectivity not available")
+            return
+        }
+
+        guard session.isReachable else {
+            onTranscriptionError?("iPhone not reachable")
+            return
+        }
+
+        let request = TranscriptionRequest(audioData: audioData)
+        pendingTranscriptionIds.insert(request.requestId)
+
+        session.sendMessage(request.toDictionary(), replyHandler: { [weak self] _ in
+            // Request acknowledged
+        }) { [weak self] error in
+            Task { @MainActor in
+                self?.pendingTranscriptionIds.remove(request.requestId)
+                self?.onTranscriptionError?("Failed to send request: \(error.localizedDescription)")
+            }
+        }
+    }
 }
 
 // MARK: - WCSessionDelegate
@@ -96,6 +128,11 @@ extension WatchConnectivityService: WCSessionDelegate {
                 aiStatusMessage = "Connection failed"
                 return
             }
+
+            // Diagnostic logging for WatchConnectivity debugging
+            print("WCSession activated - state: \(activationState.rawValue)")
+            print("  isCompanionAppInstalled: \(session.isCompanionAppInstalled)")
+            print("  isReachable: \(session.isReachable)")
 
             updateConnectionState(session)
         }
@@ -137,11 +174,15 @@ extension WatchConnectivityService: WCSessionDelegate {
             if let response = SummarizationResponse.fromDictionary(message) {
                 handleSummarizationResponse(response)
             }
+        case .transcriptionResponse:
+            if let response = TranscriptionResponse.fromDictionary(message) {
+                handleTranscriptionResponse(response)
+            }
         case .statusUpdate:
             if let status = ConnectionStatus.fromDictionary(message) {
                 handleStatusUpdate(status)
             }
-        case .summarizationRequest:
+        case .summarizationRequest, .transcriptionRequest:
             // Requests go from Watch to iPhone, not the other way
             break
         }
@@ -157,6 +198,16 @@ extension WatchConnectivityService: WCSessionDelegate {
         }
     }
 
+    private func handleTranscriptionResponse(_ response: TranscriptionResponse) {
+        pendingTranscriptionIds.remove(response.requestId)
+
+        if response.success, let transcription = response.transcription {
+            onTranscriptionReceived?(transcription)
+        } else if let error = response.error {
+            onTranscriptionError?(error)
+        }
+    }
+
     private func handleStatusUpdate(_ status: ConnectionStatus) {
         isAIAvailable = status.isAIAvailable
         aiStatusMessage = status.statusMessage
@@ -164,8 +215,11 @@ extension WatchConnectivityService: WCSessionDelegate {
 
     private func updateConnectionState(_ session: WCSession) {
         isPhoneReachable = session.isReachable
+        isCompanionAppInstalled = session.isCompanionAppInstalled
 
-        if !session.isReachable {
+        if !session.isCompanionAppInstalled {
+            aiStatusMessage = "iPhone app not installed"
+        } else if !session.isReachable {
             aiStatusMessage = "iPhone not connected"
         }
     }
