@@ -104,25 +104,44 @@ final class TranscriptionService: ObservableObject {
         let request = SFSpeechURLRecognitionRequest(url: tempURL)
         request.shouldReportPartialResults = false
 
-        // Perform transcription
+        // Perform transcription with safe continuation handling
         return try await withCheckedThrowingContinuation { continuation in
+            // Track whether we've already resumed to prevent double-resume crash
+            var hasResumed = false
+            let resumeLock = NSLock()
+
+            func safeResume(with result: Result<String, Error>) {
+                resumeLock.lock()
+                defer { resumeLock.unlock() }
+
+                guard !hasResumed else { return }
+                hasResumed = true
+
+                switch result {
+                case .success(let value):
+                    continuation.resume(returning: value)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+
             recognizer.recognitionTask(with: request) { result, error in
                 if let error = error {
-                    continuation.resume(throwing: TranscriptionError.recognitionFailed(error.localizedDescription))
+                    safeResume(with: .failure(TranscriptionError.recognitionFailed(error.localizedDescription)))
                     return
                 }
 
                 guard let result = result else {
-                    continuation.resume(throwing: TranscriptionError.noResult)
+                    safeResume(with: .failure(TranscriptionError.noResult))
                     return
                 }
 
                 if result.isFinal {
                     let transcription = result.bestTranscription.formattedString
                     if transcription.isEmpty {
-                        continuation.resume(throwing: TranscriptionError.emptyTranscription)
+                        safeResume(with: .failure(TranscriptionError.emptyTranscription))
                     } else {
-                        continuation.resume(returning: transcription)
+                        safeResume(with: .success(transcription))
                     }
                 }
             }

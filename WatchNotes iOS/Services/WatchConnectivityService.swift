@@ -15,6 +15,9 @@ final class WatchConnectivityService: NSObject, ObservableObject {
     @Published private(set) var lastTranscriptionRequest: Date?
     @Published private(set) var pendingTranscriptionCount: Int = 0
 
+    /// Tracks in-flight transcription request IDs to prevent duplicate processing
+    private var pendingTranscriptionIds = Set<UUID>()
+
     private let summarizationService = SummarizationService.shared
     private let transcriptionService = TranscriptionService.shared
     private var session: WCSession?
@@ -86,7 +89,16 @@ final class WatchConnectivityService: NSObject, ObservableObject {
 
     /// Process a transcription request from the Watch
     private func handleTranscriptionRequest(_ request: TranscriptionRequest) {
+        // Prevent duplicate processing (WatchConnectivity can deliver duplicates)
+        guard !pendingTranscriptionIds.contains(request.requestId) else {
+            print("Ignoring duplicate transcription request: \(request.requestId)")
+            return
+        }
+        pendingTranscriptionIds.insert(request.requestId)
+
         Task { @MainActor in
+            defer { pendingTranscriptionIds.remove(request.requestId) }
+
             pendingTranscriptionCount += 1
             lastTranscriptionRequest = Date()
 
@@ -185,6 +197,39 @@ extension WatchConnectivityService: WCSessionDelegate {
 
             // Acknowledge receipt
             replyHandler(["received": true])
+        }
+    }
+
+    /// Handle incoming file transfers from Watch (used for audio data which exceeds sendMessage size limits)
+    /// CRITICAL: Must read file data synchronously before returning - system may delete the file after delegate returns
+    nonisolated func session(_ session: WCSession, didReceive file: WCSessionFile) {
+        // Validate metadata synchronously
+        guard let metadata = file.metadata,
+              let messageTypeRaw = metadata["messageType"] as? String,
+              messageTypeRaw == NoteMessageType.transcriptionRequest.rawValue,
+              let requestIdString = metadata["requestId"] as? String,
+              let requestId = UUID(uuidString: requestIdString) else {
+            print("Invalid file transfer metadata received")
+            return
+        }
+
+        // MUST read file data before returning - system may delete it after delegate returns
+        let audioData: Data
+        do {
+            audioData = try Data(contentsOf: file.fileURL)
+        } catch {
+            print("Failed to read transferred audio file: \(error.localizedDescription)")
+            Task { @MainActor in
+                let response = TranscriptionResponse(requestId: requestId, error: "Failed to read audio file")
+                self.sendTranscriptionResponse(response)
+            }
+            return
+        }
+
+        // Now safe to process asynchronously - we have the data in memory
+        Task { @MainActor in
+            let request = TranscriptionRequest(requestId: requestId, audioData: audioData)
+            self.handleTranscriptionRequest(request)
         }
     }
 

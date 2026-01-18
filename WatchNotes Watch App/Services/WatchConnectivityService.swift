@@ -100,22 +100,55 @@ final class WatchConnectivityService: NSObject, ObservableObject {
             return
         }
 
-        guard session.isReachable else {
-            onTranscriptionError?("iPhone not reachable")
+        // Note: transferFile works even when not immediately reachable - it queues the transfer
+        guard session.activationState == .activated else {
+            onTranscriptionError?("Watch connectivity not active")
             return
         }
 
-        let request = TranscriptionRequest(audioData: audioData)
-        pendingTranscriptionIds.insert(request.requestId)
+        let requestId = UUID()
+        pendingTranscriptionIds.insert(requestId)
 
-        session.sendMessage(request.toDictionary(), replyHandler: { [weak self] _ in
-            // Request acknowledged
-        }) { [weak self] error in
-            Task { @MainActor in
-                self?.pendingTranscriptionIds.remove(request.requestId)
-                self?.onTranscriptionError?("Failed to send request: \(error.localizedDescription)")
-            }
+        // Write audio data to a temp file for transfer
+        // Using transferFile() instead of sendMessage() because audio data can exceed
+        // the ~64KB size limit of sendMessage(), causing crashes on the iOS side
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(requestId.uuidString)
+            .appendingPathExtension("m4a")
+
+        do {
+            try audioData.write(to: tempURL)
+        } catch {
+            pendingTranscriptionIds.remove(requestId)
+            onTranscriptionError?("Failed to prepare audio file: \(error.localizedDescription)")
+            return
         }
+
+        // Transfer file with metadata
+        let metadata: [String: Any] = [
+            "messageType": NoteMessageType.transcriptionRequest.rawValue,
+            "requestId": requestId.uuidString,
+            "timestamp": Date().timeIntervalSince1970
+        ]
+
+        session.transferFile(tempURL, metadata: metadata)
+
+        // Clean up temp file after a delay (transfer copies the file)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            try? FileManager.default.removeItem(at: tempURL)
+        }
+    }
+
+    /// Clear transcription callbacks (call when view dismisses to prevent updates to deallocated views)
+    func clearTranscriptionCallbacks() {
+        onTranscriptionReceived = nil
+        onTranscriptionError = nil
+    }
+
+    /// Cancel all pending transcription requests and clear callbacks
+    func cancelPendingTranscriptions() {
+        pendingTranscriptionIds.removeAll()
+        clearTranscriptionCallbacks()
     }
 }
 

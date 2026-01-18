@@ -89,7 +89,15 @@ struct VoiceInputView: View {
             setupTranscriptionCallback()
         }
         .onDisappear {
+            // Stop recording if still active
             stopRecording()
+
+            // CRITICAL: Clear callbacks to prevent updates to deallocated view
+            connectivityService.clearTranscriptionCallbacks()
+
+            // Deactivate audio session
+            let audioSession = AVAudioSession.sharedInstance()
+            try? audioSession.setActive(false, options: .notifyOthersOnDeactivation)
         }
         .onReceive(connectivityService.$isPhoneReachable) { reachable in
             isPhoneReachable = reachable
@@ -355,6 +363,10 @@ struct VoiceInputView: View {
 
         audioRecorder?.stop()
         isRecording = false
+
+        // Deactivate audio session to release resources
+        let audioSession = AVAudioSession.sharedInstance()
+        try? audioSession.setActive(false, options: .notifyOthersOnDeactivation)
 
         // Send audio to iPhone for transcription
         guard let url = recordingURL else {
