@@ -14,6 +14,12 @@ import SwiftData
 @main
 struct WatchNotesApp: App {
 
+    /// Initialize WatchConnectivity service when app starts
+    init() {
+        // Accessing the shared instance triggers its initialization
+        _ = WatchConnectivityService.shared
+    }
+
     /// The body property defines the app's scene hierarchy
     /// For watchOS, we use WindowGroup as the main scene
     var body: some Scene {

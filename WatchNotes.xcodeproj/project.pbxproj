@@ -8,12 +8,36 @@
 
 /* Begin PBXFileReference section */
 		7EB57D862F1C502B006DA849 /* WatchNotes Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchNotes Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7EC00001000000000000000A /* WatchNotes iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WatchNotes iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7EC0000B000000000000000A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7EB57D852F1C502B006DA849 /* WatchNotes Watch App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7EB57D882F1C502B006DA849 /* WatchNotes Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7EC0000B000000000000000A /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
 			path = "WatchNotes Watch App";
+			sourceTree = "<group>";
+		};
+		7EC00002000000000000000A /* WatchNotes iOS */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "WatchNotes iOS";
+			sourceTree = "<group>";
+		};
+		7EC00003000000000000000A /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -26,13 +50,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7EC00004000000000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		7EB57D7D2F1C502A006DA849 = {
 			isa = PBXGroup;
 			children = (
+				7EC00003000000000000000A /* Shared */,
 				7EB57D882F1C502B006DA849 /* WatchNotes Watch App */,
+				7EC00002000000000000000A /* WatchNotes iOS */,
 				7EB57D872F1C502B006DA849 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				7EB57D862F1C502B006DA849 /* WatchNotes Watch App.app */,
+				7EC00001000000000000000A /* WatchNotes iOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -62,12 +96,36 @@
 			);
 			fileSystemSynchronizedGroups = (
 				7EB57D882F1C502B006DA849 /* WatchNotes Watch App */,
+				7EC00003000000000000000A /* Shared */,
 			);
 			name = "WatchNotes Watch App";
 			packageProductDependencies = (
 			);
 			productName = "WatchNotes Watch App";
 			productReference = 7EB57D862F1C502B006DA849 /* WatchNotes Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		7EC00005000000000000000A /* WatchNotes iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7EC00006000000000000000A /* Build configuration list for PBXNativeTarget "WatchNotes iOS" */;
+			buildPhases = (
+				7EC00007000000000000000A /* Sources */,
+				7EC00004000000000000000A /* Frameworks */,
+				7EC00008000000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				7EC00002000000000000000A /* WatchNotes iOS */,
+				7EC00003000000000000000A /* Shared */,
+			);
+			name = "WatchNotes iOS";
+			packageProductDependencies = (
+			);
+			productName = "WatchNotes iOS";
+			productReference = 7EC00001000000000000000A /* WatchNotes iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -81,6 +139,9 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					7EB57D852F1C502B006DA849 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					7EC00005000000000000000A = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
@@ -100,6 +161,7 @@
 			projectRoot = "";
 			targets = (
 				7EB57D852F1C502B006DA849 /* WatchNotes Watch App */,
+				7EC00005000000000000000A /* WatchNotes iOS */,
 			);
 		};
 /* End PBXProject section */
@@ -112,10 +174,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7EC00008000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7EB57D822F1C502B006DA849 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7EC00007000000000000000A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -250,16 +326,16 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BU9RD766GN;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WatchNotes Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = WatchNotes;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.watchnotes.ios";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = .watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.watchnotes.ios.watchkitapp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -283,16 +359,16 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BU9RD766GN;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WatchNotes Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = WatchNotes;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "com.watchnotes.ios";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = .watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.watchnotes.ios.watchkitapp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -305,6 +381,77 @@
 				TARGETED_DEVICE_FAMILY = 4;
 				VALIDATE_PRODUCT = YES;
 				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		7EC00009000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BU9RD766GN;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = WatchNotes;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.watchnotes.ios";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		7EC0000A000000000000000A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BU9RD766GN;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = WatchNotes;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.watchnotes.ios";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -325,6 +472,15 @@
 			buildConfigurations = (
 				7EB57D922F1C502C006DA849 /* Debug */,
 				7EB57D932F1C502C006DA849 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7EC00006000000000000000A /* Build configuration list for PBXNativeTarget "WatchNotes iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7EC00009000000000000000A /* Debug */,
+				7EC0000A000000000000000A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

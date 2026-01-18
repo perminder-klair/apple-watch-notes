@@ -22,6 +22,9 @@ struct NotesListView: View {
     /// The sort parameter orders notes by updatedAt (newest first)
     @Query(sort: \Note.updatedAt, order: .reverse) private var notes: [Note]
 
+    /// Watch connectivity service for summary status
+    @ObservedObject private var connectivityService = WatchConnectivityService.shared
+
     // MARK: - State
 
     /// Controls whether the "new note" action sheet is shown
@@ -95,10 +98,13 @@ struct NotesListView: View {
         List {
             ForEach(notes) { note in
                 NavigationLink {
-                    // Navigate to editor when tapping a note
-                    NoteEditorView(note: note, inputMode: .keyboard)
+                    // Navigate to detail view when tapping a note
+                    NoteDetailView(note: note)
                 } label: {
-                    NoteRowView(note: note)
+                    NoteRowView(
+                        note: note,
+                        isPendingSummary: connectivityService.isPending(noteId: note.id)
+                    )
                 }
             }
             .onDelete(perform: deleteNotes)
@@ -123,6 +129,7 @@ struct NotesListView: View {
 /// A single row in the notes list showing note preview and metadata
 struct NoteRowView: View {
     let note: Note
+    var isPendingSummary: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -132,6 +139,16 @@ struct NoteRowView: View {
                     .lineLimit(1)
 
                 Spacer()
+
+                // Show summary status indicators
+                if isPendingSummary {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                } else if note.hasSummary {
+                    Image(systemName: "sparkles")
+                        .font(.caption)
+                        .foregroundColor(note.isSummaryOutdated ? .orange : .purple)
+                }
 
                 // Show mic icon if note was created via voice
                 if note.wasVoiceInput {

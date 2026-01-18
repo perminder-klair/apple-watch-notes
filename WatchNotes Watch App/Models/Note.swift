@@ -35,6 +35,12 @@ final class Note {
     /// Indicates if the note was created via voice input
     var wasVoiceInput: Bool
 
+    /// AI-generated summary of the note content
+    var summary: String?
+
+    /// When the summary was generated
+    var summaryGeneratedAt: Date?
+
     // MARK: - Initializer
 
     /// Creates a new Note with the given content
@@ -53,6 +59,8 @@ final class Note {
         self.wasVoiceInput = wasVoiceInput
         self.createdAt = Date()
         self.updatedAt = Date()
+        self.summary = nil
+        self.summaryGeneratedAt = nil
     }
 
     // MARK: - Helper Methods
@@ -90,5 +98,35 @@ final class Note {
         formatter.dateStyle = .short
         formatter.timeStyle = .short
         return formatter.string(from: updatedAt)
+    }
+
+    // MARK: - Summary Methods
+
+    /// Whether the note has a summary
+    var hasSummary: Bool {
+        summary != nil && !summary!.isEmpty
+    }
+
+    /// Whether the summary is outdated (note was edited after summary was generated)
+    var isSummaryOutdated: Bool {
+        guard let generatedAt = summaryGeneratedAt else { return false }
+        return updatedAt > generatedAt
+    }
+
+    /// Whether the note is long enough to be summarized (minimum 50 characters)
+    var canBeSummarized: Bool {
+        content.count >= 50
+    }
+
+    /// Updates the summary and timestamp
+    func updateSummary(_ newSummary: String) {
+        self.summary = newSummary
+        self.summaryGeneratedAt = Date()
+    }
+
+    /// Clears the summary (e.g., when note content changes significantly)
+    func clearSummary() {
+        self.summary = nil
+        self.summaryGeneratedAt = nil
     }
 }
